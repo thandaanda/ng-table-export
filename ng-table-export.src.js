@@ -48,8 +48,16 @@ angular.module('ngTableExport', [])
            * Dynamically generate a link and click it
            */
           function download(dataUri, filename) {
-            var link = angular.element('<a style="display:none;" href="' + dataUri + '" download="' + filename + '"></a>');
-            link[0].click();
+            // tested in chrome / firefox / safari
+            var link = document.createElement('a');
+            link.style.display = 'none';
+            link.href = dataUri;
+            link.download = filename;
+            // must append to body for firefox; chrome & safari don't mind
+            document.body.appendChild(link);
+            link.click();
+            // destroy
+            document.body.removeChild(link);
           }
 
           var csv = {
