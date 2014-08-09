@@ -11,9 +11,20 @@ angular.module('ngTableExport', [])
   return {
       restrict: 'A',
       scope: false,
+
+      /**
+       * scope is table scope, element is <table>
+       */
       link: function(scope, element, attrs) {
 
           var data = '';
+
+          function stringify(str) {
+            return '"' +
+              str.replace(/^\s\s*/, '').replace(/\s*\s$/, '') // trim spaces
+                 .replace(/"/g,'""') + // replace quotes with double quotes
+              '"';
+          }
 
           /**
            * Parse the table and build up data uri
@@ -34,7 +45,7 @@ angular.module('ngTableExport', [])
               if (i !== 1) {
                 angular.forEach(tds, function(td) {
                   // respect colspan in row data
-                  rowData += csv.stringify(angular.element(td).text()) + Array.apply(null, Array(td.colSpan)).map(function () { return delimiter; }).join('');
+                  rowData += stringify(angular.element(td).text()) + Array.apply(null, Array(td.colSpan)).map(function () { return delimiter; }).join('');
                 });
                 rowData = rowData.slice(0, rowData.length - 1); //remove last semicolon
               }
@@ -45,14 +56,17 @@ angular.module('ngTableExport', [])
           }
 
           /**
-           * Dynamically generate a link and click it
+           * Dynamically generate a link and click it; works in chrome + firefox; unfortunately, safari
+           * does not support the `download` attribute, so it ends up opening the file in a new tab https://bugs.webkit.org/show_bug.cgi?id=102914
            */
           function download(dataUri, filename) {
             // tested in chrome / firefox / safari
             var link = document.createElement('a');
+            // chrome + firefox
             link.style.display = 'none';
             link.href = dataUri;
             link.download = filename;
+            link.target = '_blank';
             // must append to body for firefox; chrome & safari don't mind
             document.body.appendChild(link);
             link.click();
@@ -61,19 +75,10 @@ angular.module('ngTableExport', [])
           }
 
           var csv = {
-
-            stringify: function(str) {
-              return '"' +
-                str.replace(/^\s\s*/, '').replace(/\s*\s$/, '') // trim spaces
-                    .replace(/"/g,'""') + // replace quotes with double quotes
-                '"';
-            },
-
             /**
              *  Generate data URI from table data
              */
             generate: function(event, filename) {
-
               event.stopPropagation();
               event.preventDefault();
 
@@ -108,10 +113,11 @@ angular.module('ngTableExport', [])
                 parseTable();
                 download(header + encodeURIComponent(data), filename);
               }
-
               return false;
             }
           };
+
+          // attach csv to table scope
           $parse(attrs.exportCsv).assign(scope.$parent, csv);
       }
   };
