@@ -12,7 +12,7 @@ bower install ng-table-export
 
 * [ngTable export to CSV](http://bazalt-cms.com/ng-table/example/15)
 
-## README
+## IMPORTANT README
 This is my fork of [esvit/ng-table-export](https://github.com/esvit/ng-table-export)
 
 I made some considerable changes -- namely, I needed to [fix it to work with ng-table's pager](https://github.com/esvit/ng-table-export/issues/8).  If the pager is enabled, the export plugin would only export a page of data.  My fix is mostly a re-write, and it isn't perfect, but it seems to work for me.
@@ -27,6 +27,34 @@ I also added a few more tweaks:
 
 * Changed the delmiter from semicolon to tab `\t` -- you can change this or bind it via the scope if you want
 * Added a small header to the csv so Excel will open it immediately without requiring you to `Import a file` -- it's a hint to Excel to use the right delimiter
+* I added the ability to be able to pass in the filename 
 * Made it respect `colspan`, e.g. `<td colspan="3">` -- normally everything would be left aligned in the output file, and this is bad news when you have things like group headers that may span multiple columns.  It now respects these and the output is identical to the table formatting.
 
 Hopefully someone finds it useful -- would love to hear any improvements -- the use of `$timeout` is pretty shady here, but I couldn't devise an event driven way to figure out when the browser had finished rendering the table so it was safe to parse.  
+
+The usage has changed from the original.  Here's an example of how to use it:
+
+```html
+<a ng-click='csv.generate($event, "my-file.csv")' href=''></a>
+```
+
+`protip` on the controller $scope that this link would hang off, you can do this trick with angular expressions to dynamically generate the filename:
+
+```html
+<a ng-controller='MyCtrl' ng-click='csv.generate($event, filename() + ".csv")' href=''></a>
+```
+
+```javascript
+angular.controller('MyCtrl', function ($scope) {
+  $scope.filename = function () {
+    // dynamic filename
+    return Math.random();
+  };
+}
+```
+
+The rest of it is the same...place the directive on the table itself:
+
+```html
+<table ng-table='tableParams' export-csv='csv'></table>
+```
