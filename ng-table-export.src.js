@@ -19,6 +19,9 @@ angular.module('ngTableExport', [])
 
           var data = '';
 
+          // allow pass in of delimiter via directive attrs
+          if (attrs.delimiter) { delimiter = attrs.delimiter; }
+
           function stringify(str) {
             return '"' +
               str.replace(/^\s\s*/, '').replace(/\s*\s$/, '') // trim spaces
@@ -67,11 +70,15 @@ angular.module('ngTableExport', [])
             link.href = dataUri;
             link.download = filename;
             link.target = '_blank';
-            // must append to body for firefox; chrome & safari don't mind
-            document.body.appendChild(link);
-            link.click();
-            // destroy
-            document.body.removeChild(link);
+            // needs to get wrapped to play nicely with angular $digest
+            // else may cause '$digest already in progress' errors with other angular controls (e.g. angular-ui dropdown)
+            $timeout(function () {
+              // must append to body for firefox; chrome & safari don't mind
+              document.body.appendChild(link);
+              link.click();
+              // destroy
+              document.body.removeChild(link);
+            }, 0, false);
           }
 
           var csv = {
@@ -79,8 +86,6 @@ angular.module('ngTableExport', [])
              *  Generate data URI from table data
              */
             generate: function(event, filename) {
-              event.stopPropagation();
-              event.preventDefault();
 
               var table = scope.$parent.tableParams,
                 settings = table.settings(),
@@ -113,7 +118,6 @@ angular.module('ngTableExport', [])
                 parseTable();
                 download(header + encodeURIComponent(data), filename);
               }
-              return false;
             }
           };
 
