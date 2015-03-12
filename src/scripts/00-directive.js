@@ -85,9 +85,9 @@ angular.module('ngTableExport', [])
             /**
              *  Generate data URI from table data
              */
-            generate: function(event, filename) {
+            generate: function(event, filename, table) {
 
-              var table = scope.$parent.tableParams,
+              var table = table || scope.$parent.tableParams,
                 settings = table.settings(),
                 cnt = table.count(),
                 total = settings.total;
