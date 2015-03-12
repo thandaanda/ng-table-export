@@ -87,13 +87,14 @@ angular.module('ngTableExport', [])
              */
             generate: function(event, filename, table) {
 
-              var table = table || scope.$parent.tableParams,
-                settings = table.settings(),
-                cnt = table.count(),
-                total = settings.total;
+              var isNgTable = attrs.ngTable,
+                table = table || scope.$parent.tableParams,
+                settings = table ? table.settings() : {},
+                cnt = table ? table.count() : {},
+                total = table ? settings.total : {};
 
               // is pager on?  if so, we have to disable it temporarily
-              if (cnt < total) {
+              if (isNgTable && cnt < total) {
                 var $off = settings.$scope.$on('ngTableAfterReloadData', function () {
                   // de-register callback so it won't continue firing
                   $off();
