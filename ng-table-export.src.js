@@ -5,7 +5,7 @@ angular.module('ngTableExport', [])
 }])
 .directive('exportCsv', ['$parse', '$timeout', function ($parse, $timeout) {
 
-  var delimiter = '\t';
+  var delimiter = ',';
   var header = 'data:text/csv;charset=UTF-8,';
 
   return {
